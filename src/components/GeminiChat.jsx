@@ -59,14 +59,14 @@ const GeminiChat = () => {
 
         // SI isDev ES TRUE (SIGNIFICA QUE ESTA EN MODO DEV) SE USA URL DE GOOGLE, SI ES FALSE SE USA NETLIFY FUNCTION
         const url = isDev
-            ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent`
+            ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`
             : '/.netlify/functions/gemini';
 
         try {
             const res = await fetch(url, {
                 method: 'POST',
-                contentType: 'application/json',
                 headers: {
+                    contentType: 'application/json',
                     'x-goog-api-key': apiKey,
                 },
                 body: JSON.stringify(
@@ -79,6 +79,7 @@ const GeminiChat = () => {
             const data = await res.json();
 
             if (res.ok) {
+                // Manejo de respuesta según el origen
                 const aiText = isDev
                     ? data.candidates[0].content.parts[0].text
                     : (data.candidates ? data.candidates[0].content.parts[0].text : data.text);
@@ -88,9 +89,11 @@ const GeminiChat = () => {
                     { question: userQuestion, answer: aiText }
                 ]);
             } else {
+                // Si Google responde con error, aquí verás el porqué real
+                const errorMsg = data.error?.message || data.error || 'Algo salió mal';
                 setMessages((prev) => [
                     ...prev,
-                    { question: userQuestion, answer: `**Error:** ${data.error || 'Algo salió mal'}` }
+                    { question: userQuestion, answer: `**Error:** ${errorMsg}` }
                 ]);
             }
         } catch (error) {
