@@ -39,7 +39,14 @@ export const handler = async (event) => {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text }] }] }),
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user", // Agregar el rol explícitamente ayuda a evitar el 400
+              parts: [{ text: text }]
+            }
+          ]
+        }),
       }
     );
 
