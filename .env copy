@@ -1,0 +1,2 @@
+VITE_API_KEY=<Clave API KEY de Geminis, sin comillas, hay que definirla tambien si se despliega>
+VITE_ENVIRONMENT=true (si es true es para desarrollo, no es necesario definirla si se despliega)
