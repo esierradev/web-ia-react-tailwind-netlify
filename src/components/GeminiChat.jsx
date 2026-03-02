@@ -53,53 +53,37 @@ const GeminiChat = () => {
         setLoading(true);
         setInput('');
 
-        // Lógica de detección de entorno (dev o produc)
-        const apiKey = import.meta.env.VITE_API_KEY;
-        const isDev = import.meta.env.VITE_ENVIRONMENT;
-
-        // SI isDev ES TRUE (SIGNIFICA QUE ESTA EN MODO DEV) SE USA URL DE GOOGLE, SI ES FALSE SE USA NETLIFY FUNCTION
-        const url = isDev
-            ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`
-            : '/.netlify/functions/gemini';
+        // OLVIDA EL ISDEV PARA LA URL.
+        // Siempre apunta a tu función de Netlify.
+        const url = '/.netlify/functions/gemini';
 
         try {
             const res = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    contentType: 'application/json',
-                    'x-goog-api-key': apiKey,
-                },
-                body: JSON.stringify(
-                    isDev
-                        ? { contents: [{ parts: [{ text: userQuestion }] }] }
-                        : { text: userQuestion }
-                ),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: userQuestion }), // La función espera "text"
             });
 
             const data = await res.json();
 
             if (res.ok) {
-                // Manejo de respuesta según el origen
-                const aiText = isDev
-                    ? data.candidates[0].content.parts[0].text
-                    : (data.candidates ? data.candidates[0].content.parts[0].text : data.text);
+                // Ajustamos la lectura a lo que devuelve tu función (data.text o la estructura de Google)
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || data.text;
 
                 setMessages((prev) => [
                     ...prev,
                     { question: userQuestion, answer: aiText }
                 ]);
             } else {
-                // Si Google responde con error, aquí verás el porqué real
-                const errorMsg = data.error?.message || data.error || 'Algo salió mal';
                 setMessages((prev) => [
                     ...prev,
-                    { question: userQuestion, answer: `**Error:** ${errorMsg}` }
+                    { question: userQuestion, answer: `**Error:** ${data.error}` }
                 ]);
             }
         } catch (error) {
             setMessages((prev) => [
                 ...prev,
-                { question: userQuestion, answer: '**Error:** No se pudo conectar con el servicio.' }
+                { question: userQuestion, answer: '**Error:** No se pudo conectar.' }
             ]);
         } finally {
             setLoading(false);
